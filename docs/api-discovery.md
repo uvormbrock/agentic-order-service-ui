@@ -42,7 +42,9 @@ All `{id}` path parameters are required canonical UUID strings. No pagination, s
 - **ProductDetailsRequest**: `name: string` (required), `price: number` (required).
 - **ProductResponse**: `active: boolean` (required), `id: string` (required), `name: string` (required), `price: number` (required).
 
-## Derived frontend feature list
+## Backend-derived feature possibilities
+
+This discovery list records API capabilities, not a checklist of implemented UI features. See the [README](../README.md) for the current application.
 
 - **Products:** list and detail views, create, edit name/price, deactivate. Show active state. No product deletion or reactivation action.
 - **Product images:** thumbnail preview with missing-image fallback, original view, JPEG/PNG upload or replacement, image deletion. Create the product first, then upload using its ID; retain the product and offer upload retry if upload fails. Product JSON has no image metadata or image-presence flag.
@@ -60,7 +62,7 @@ All `{id}` path parameters are required canonical UUID strings. No pagination, s
 - API snapshot server URL is relative `/`. A separate frontend origin needs a development proxy or explicitly approved backend CORS configuration. CORS support cannot be inferred from this snapshot; backend configuration was not changed.
 - Generated types provide compile-time contracts, not runtime validation. Binary schema strings require a browser adapter for File/FormData/Blob.
 
-## Proposed implementation structure
+## Initial implementation structure
 
 ```text
 src/
@@ -73,4 +75,4 @@ src/
       schema.d.ts  # generated; do not hand edit
 ```
 
-React components, routing, UI dependencies, API adapters, proxy configuration and deployment remain for the next frontend increment.
+This structure was proposed during initial discovery. React views, API adapters and the development proxy now exist, with an additional `shopping` feature for the local customer demo. Deployment remains outside this discovery record; see the [README](../README.md) for current setup and limitations.
