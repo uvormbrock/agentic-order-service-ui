@@ -54,6 +54,14 @@ describe('customer management integration', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('preserves Unicode trimming semantics, interior whitespace and characters outside White_Space', () => {
+    expect(validateCustomerDetails('\u0085\u00a0\u2003Alice\u202f\u3000', '\t USER@EXAMPLE.COM\n')).toEqual({ name: 'Alice', email: 'user@example.com' });
+    expect(validateCustomerDetails('  Alice\u2003Bob  ', 'a@b')).toHaveProperty('name', 'Alice\u2003Bob');
+    expect(validateCustomerDetails('\ufeffAlice\ufeff', 'a@b')).toHaveProperty('name', '\ufeffAlice\ufeff');
+    expect(validateCustomerDetails(' '.repeat(10000) + '😀' + '\u0085'.repeat(10000), 'a@b')).toHaveProperty('name', '😀');
+    expect(() => validateCustomerDetails('\u0085\u2003\u3000', 'a@b')).toThrow('Name must contain');
+  });
+
   it.each(['create', 'edit'] as const)('sends normalized %s once while pending, preserving inactive edit and successful save despite refresh failure', async kind => {
     let resolve!: (response: Response) => void;
     let reads = 0;

@@ -4,7 +4,14 @@ import { ApiRequestError } from '../../shared/api/client';
 import { createCustomer, deactivateCustomer, deleteCustomer, updateCustomer, type Customer, type CustomerDetails } from './api';
 
 export type CustomerAction = { kind: 'create' } | { kind: 'edit' | 'deactivate' | 'delete'; customer: Customer };
-const stripWhitespace = (value: string) => value.replace(/^\p{White_Space}+|\p{White_Space}+$/gu, '');
+const unicodeWhitespace = /\p{White_Space}/u;
+function stripWhitespace(value: string): string {
+  let start = 0;
+  let end = value.length;
+  while (start < end && unicodeWhitespace.test(value[start])) start++;
+  while (end > start && unicodeWhitespace.test(value[end - 1])) end--;
+  return value.slice(start, end);
+}
 export function validateCustomerDetails(name: string, email: string): CustomerDetails {
   const normalizedName = stripWhitespace(name);
   const normalizedEmail = stripWhitespace(email).toLowerCase();
