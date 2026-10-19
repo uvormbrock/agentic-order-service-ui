@@ -71,7 +71,22 @@ npm run build
 npm run test:coverage
 ```
 
-Vitest runs in jsdom with mocked API responses, including writes; these tests do not establish browser or live-write verification. Browser and live backend write verification remain pending. ESLint is not configured. Coverage writes text/LCOV reports under ignored `coverage/`, excluding tests and generated declarations; no coverage threshold is configured.
+Vitest runs in jsdom with mocked API responses, including writes. ESLint is not configured. Coverage writes text/LCOV reports under ignored `coverage/`, excluding tests and generated declarations; no coverage threshold is configured.
+
+Install Chromium once, then run the browser smoke tests:
+
+```sh
+npm exec playwright install chromium
+npm run test:e2e
+```
+
+Playwright runs the actual application in Chromium with deterministic browser network fixtures; no backend or database is required. It manages a dedicated Vite server on `127.0.0.1:4177`, without the development backend proxy or reuse of an existing server. Exactly three scenarios cover:
+
+1. Admin navigation between Products, Customers and Orders, plus Customer/Admin switching and active-mode highlighting.
+2. Product catalog thumbnails and missing-image fallback, populated edit details, and cancelling without writes.
+3. Active customer/product selection, inactive-product exclusion, cart quantity changes, and checkout confirmation cancelled without `POST /orders`.
+
+These are mocked browser smoke tests, not verified live-backend integration. Live backend write verification remains pending. Failure reports and test artifacts are ignored by Git.
 
 The [SonarQube Cloud workflow](.github/workflows/sonarqube.yml) runs on pushes to `main` or manual dispatch, installs locked dependencies, runs coverage, then scans using the configured `SONAR_TOKEN` secret. [Scanner configuration](sonar-project.properties) imports `coverage/lcov.info`. Configuration does not imply a successful remote analysis or quality gate.
 
