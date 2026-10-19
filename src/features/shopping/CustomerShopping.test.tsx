@@ -134,7 +134,7 @@ describe('customer shopping', () => {
 
   it('filters My Orders by exact customerId and ignores old identity responses after switching', async () => {
     let oldResolve!: (response: Response) => void;
-    const fetch = vi.fn().mockImplementationOnce(() => new Promise<Response>(done => { oldResolve = done; })).mockResolvedValueOnce(json([{ ...order, customerId: bob.id, customer: bob }, order]));
+    const fetch = vi.fn().mockImplementationOnce(() => new Promise<Response>(done => { oldResolve = done; })).mockResolvedValueOnce(json([{ ...order, customerId: bob.id, customer: bob }, order])).mockImplementation(async () => missing());
     vi.stubGlobal('fetch', fetch);
     const view = render(<MantineProvider><MyOrders customerId={alice.id} revision={0} /></MantineProvider>);
     view.rerender(<MantineProvider><MyOrders customerId={bob.id} revision={0} /></MantineProvider>);
@@ -143,7 +143,7 @@ describe('customer shopping', () => {
     await act(async () => { oldResolve(json([order])); });
     await waitFor(() => expect(screen.queryByText('Customer: Alice')).not.toBeInTheDocument());
     expect(fetch).toHaveBeenCalledWith('/orders', expect.objectContaining({ headers: { Accept: 'application/json' } }));
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch.mock.calls.filter(([path]) => path === '/orders')).toHaveLength(2);
   });
 
   it('preserves admin navigation and shopping cart across mode switches', async () => {

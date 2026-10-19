@@ -2,6 +2,7 @@
 node_modules/
 .npm/
 .vite/
+.scannerwork/
 
 # Build and test output
 dist/
