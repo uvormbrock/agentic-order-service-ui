@@ -1,0 +1,30 @@
+# Project defaults only; inherited permissions and managed policies remain authoritative.
+[features]
+multi_agent = true
+
+[agents]
+max_concurrent_threads_per_session = 3
+
+[agents.requirements]
+description = "Analyze supported API capabilities and UI acceptance criteria."
+config_file = "agents/requirements.toml"
+
+[agents.architect]
+description = "Design the smallest maintainable frontend increment."
+config_file = "agents/architect.toml"
+
+[agents.implementer]
+description = "Implement approved frontend work in assigned files."
+config_file = "agents/implementer.toml"
+
+[agents.tester]
+description = "Verify frontend behavior and report actual evidence."
+config_file = "agents/tester.toml"
+
+[agents.reviewer]
+description = "Independently review the actual diff without editing."
+config_file = "agents/reviewer.toml"
+
+[agents.documenter]
+description = "Keep concise frontend documentation aligned with behavior."
+config_file = "agents/documenter.toml"
