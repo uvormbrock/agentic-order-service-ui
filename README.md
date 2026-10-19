@@ -76,7 +76,10 @@ Automated tests use mocked API responses. Live backend write verification has no
 npm run typecheck
 npm run build
 npm test
+npm run test:coverage
 ```
+
+Coverage reports are written to the ignored `coverage/` directory. The SonarQube Cloud workflow runs tests with coverage before scanning and imports `coverage/lcov.info`. Tests and generated declarations are excluded from coverage; no coverage threshold is configured.
 
 ## API contract tooling
 
