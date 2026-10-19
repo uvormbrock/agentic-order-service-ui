@@ -94,12 +94,13 @@ describe('product catalog integration', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it.each(['network', 'proxy'])('explains backend connection failure for %s errors', async kind => {
+  it.each(['network', 'proxy'])('distinguishes transport and HTTP failures for %s errors', async kind => {
     vi.stubGlobal('fetch', kind === 'network'
       ? vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
       : vi.fn().mockResolvedValue(new Response('', { status: 500 })));
     show();
-    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Cannot connect to the backend'));
-    expect(screen.getByRole('alert')).toHaveTextContent('BACKEND_URL in .env.local');
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(kind === 'network' ? 'Unable to reach the server' : 'HTTP 500'));
+    expect(screen.getByRole('alert')).not.toHaveTextContent('BACKEND_URL');
+    if (kind === 'proxy') expect(screen.getByRole('alert')).not.toHaveTextContent(/Cannot connect|Unable to reach/);
   });
 });

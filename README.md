@@ -54,7 +54,11 @@ Use disposable, authorized test data: saves, deactivation, deletion and checkout
 
 Admin/Customer modes change presentation only. There is **no authentication or role-based access control**; selecting a customer does not verify identity. My Orders fetches the full `GET /orders` response and filters it in the browser. This is **not a privacy boundary or a production-secure customer portal**.
 
-The frontend never automatically replays writes. A network error, HTTP 500 or unusable confirmation may leave an operation completed; inspect current data before retrying. Checkout retains its cart when confirmation is uncertain.
+Requests use a centralized 30-second timeout covering fetch and response-body consumption, including JSON and thumbnails. Internal callers can override it through the fourth `apiRequest` argument. Timeout or cancellation releases pending work; stopping a browser write request does not guarantee backend rollback.
+
+The frontend never automatically replays writes. Network failures, timeouts, cancellation, HTTP 408, unclassified 5xx responses and unusable success confirmations leave write completion uncertain; inspect or refresh current data before retrying. A complete contract-shaped HTTP 503 `SERVICE_UNAVAILABLE` error is treated as classified unavailability or confirmed-rollback failure, without automatic replay. HTTP errors retain available server code/message and `X-Request-ID`; missing messages use an HTTP-status fallback rather than a connection-failure claim. Transport failures are reported separately.
+
+Success requires the expected status and usable confirmation data (or the required bodyless 204). Failed or uncertain writes retain dialog input; uncertain checkout retains its cart and draft. A later list-refresh failure does not undo a confirmed save.
 
 Reactivation, product deletion, order update/deletion/cancellation and payments are unsupported. Image writes require backend deployment opt-in: `403 PRODUCT_IMAGE_WRITES_DISABLED` is shown without bypassing the restriction. Backend security/CORS changes are outside this frontend.
 
@@ -67,7 +71,7 @@ npm run build
 npm run test:coverage
 ```
 
-Vitest runs in jsdom with mocked API responses, including writes; these tests do not establish browser or live-write verification. Live backend write verification has not been performed. ESLint is not configured. Coverage writes text/LCOV reports under ignored `coverage/`, excluding tests and generated declarations; no coverage threshold is configured.
+Vitest runs in jsdom with mocked API responses, including writes; these tests do not establish browser or live-write verification. Browser and live backend write verification remain pending. ESLint is not configured. Coverage writes text/LCOV reports under ignored `coverage/`, excluding tests and generated declarations; no coverage threshold is configured.
 
 The [SonarQube Cloud workflow](.github/workflows/sonarqube.yml) runs on pushes to `main` or manual dispatch, installs locked dependencies, runs coverage, then scans using the configured `SONAR_TOKEN` secret. [Scanner configuration](sonar-project.properties) imports `coverage/lcov.info`. Configuration does not imply a successful remote analysis or quality gate.
 

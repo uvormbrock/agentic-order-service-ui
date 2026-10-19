@@ -50,7 +50,7 @@ This discovery list records API capabilities, not a checklist of implemented UI 
 - **Product images:** thumbnail preview with missing-image fallback, original view, JPEG/PNG upload or replacement, image deletion. Create the product first, then upload using its ID; retain the product and offer upload retry if upload fails. Product JSON has no image metadata or image-presence flag.
 - **Customers:** list and detail views, create, edit name/email, deactivate, delete. Explain CUSTOMER_HAS_ORDERS/409 when deletion is blocked. No reactivation action.
 - **Orders:** list, detail and creation using an active customer and active products with quantities. Show server-returned subtotal, discount, total and currency. Display current customer data and historical product/price snapshots. No update, cancellation or deletion operations.
-- **Shared behavior:** loading, empty and error states; display safe ApiError code/message and server X-Request-ID for support. Treat 204 as bodyless. Do not automatically replay writes after an uncertain network/500 outcome.
+- **Shared behavior:** loading, empty and error states; display safe ApiError code/message and server X-Request-ID for support. Treat 204 as bodyless. Do not automatically replay writes after uncertain completion; see the error semantics below.
 
 ## Validation and integration constraints
 
@@ -61,6 +61,14 @@ This discovery list records API capabilities, not a checklist of implemented UI 
 - Image writes require deployment opt-in; handle 403 PRODUCT_IMAGE_WRITES_DISABLED. The contract does not provide authentication or an administrator identity.
 - API snapshot server URL is relative `/`. A separate frontend origin needs a development proxy or explicitly approved backend CORS configuration. CORS support cannot be inferred from this snapshot; backend configuration was not changed.
 - Generated types provide compile-time contracts, not runtime validation. Binary schema strings require a browser adapter for File/FormData/Blob.
+
+## Error and completion semantics
+
+The contract does not imply idempotency keys. HTTP 500 explicitly does not assert rollback. HTTP 503 documents classified temporary/dependency unavailability or confirmed-rollback transient exhaustion, depending on the operation; it does not authorize blind replay.
+
+The shared frontend client distinguishes HTTP, transport, timeout, cancellation and unusable-response errors, preserving available API code/message and `X-Request-ID`. Its centralized 30-second deadline covers fetch plus JSON/blob consumption; the fourth `apiRequest` argument can override the duration. Aborting a browser write request cannot establish server rollback.
+
+For writes, HTTP 408, unclassified 5xx responses, transport failures, timeouts, cancellation and malformed confirmations are uncertain. Only HTTP 503 with the complete contract-shaped `SERVICE_UNAVAILABLE` envelope (exactly string `code` and nonempty string `message`) receives the classified-failure exception. No failure triggers automatic write replay. Write adapters require their documented success status and validate usable confirmation fields before reporting success; image upload and customer deletion require bodyless HTTP 204. Read models are not exhaustively runtime-validated.
 
 ## Initial implementation structure
 

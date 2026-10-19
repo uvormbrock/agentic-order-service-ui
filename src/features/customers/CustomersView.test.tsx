@@ -20,7 +20,8 @@ describe('customer management integration', () => {
     const fetch = vi.fn().mockRejectedValueOnce(new TypeError('offline')).mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }));
     vi.stubGlobal('fetch', fetch); show();
     expect(screen.getByRole('status')).toHaveTextContent('Loading customers');
-    expect(await screen.findByRole('alert')).toHaveTextContent('Cannot connect to the backend');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to reach the server');
+    expect(screen.getByRole('alert')).not.toHaveTextContent('BACKEND_URL');
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(screen.getByRole('status')).toHaveTextContent('Loading customers');
     expect(screen.queryByText('No customers yet')).not.toBeInTheDocument();
